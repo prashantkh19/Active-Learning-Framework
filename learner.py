@@ -44,9 +44,27 @@ class ActiveLearner():
             score = 0
             for model in self.models:
                 score += model.score(X, y)
-            return score/len(models)
+            return score/len(self.models)
         else: 
             return self.models[0].score(X, y) 
+
+    def predict(self, X):
+        if self.strategy == "committee":
+            results = []
+            for model in self.models:
+                y_prob = model.predict_proba(X)
+                no_of_classes = y_prob.shape[1]
+                y_class = np.argmax(y_prob, axis = 1)
+                results.append(y_class)
+            mat = np.transpose(np.asarray(results))
+            predictions = []
+            for idx in mat:
+                counts = np.bincount(idx)
+                predictions.append(np.argmax(counts))
+            return np.array(predictions)
+
+        else:
+            return self.models[0].predict(X)
         
     def teach(self, X, y):
         if self.X is None:
