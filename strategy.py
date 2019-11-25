@@ -22,7 +22,7 @@ def entropy(pk, qk=None):
 
 def uncertainity_sampling(X, model, measure):
     threshold = 5
-    lc_thresh=0.6; m_thresh=0.2; h_thresh=0.8
+    lc_thresh=0.6; m_thresh=0.2; h_thresh=0.5
 
     y_prob = model.predict_proba(X)
     y_prob_sorted = - np.sort(-y_prob, axis = 1)
