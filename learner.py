@@ -1,3 +1,4 @@
+from pdb import set_trace
 import numpy as np
 from strategy import *
     
@@ -29,11 +30,16 @@ class ActiveLearner():
         
     
     def query(self, X_pool):
+        # set_trace()
         if self.strategy == "uncertainity":
             return uncertainity_sampling(X_pool, self.models[0], self.uncertainity_measure)
 
         elif self.strategy == "committee":
             return query_by_committee(X_pool, self.models, self.committee_measure)
+
+        elif self.strategy == "diversity":
+            num_classes = self.models[0].classes_.shape[0]
+            return diversity_sampling(X_pool, self.models[0], num_classes=num_classes)
 
         else:
             return None
