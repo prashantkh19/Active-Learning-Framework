@@ -1,5 +1,7 @@
 import numpy as np
 import warnings
+from pdb import set_trace
+from sklearn.cluster import KMeans
 
 epsilon = 1e-7
 
@@ -58,3 +60,34 @@ def query_by_committee(X, committee, measure):
     else:
         warnings.warn("committee measure '"+ measure + "' is not applicable")
         return None
+
+def diversity_sampling(X, model, num_classes=3, threshold=5):
+    kmeans = KMeans(n_clusters=num_classes, random_state=42).fit(X)
+    index = np.arange(X.shape[0])
+    # Separate X into different clusters based on classes and keep track of indices
+    clusters = [X[kmeans.labels_ == i] for i in range(num_classes)]
+    indices = [index[kmeans.labels_ == i] for i in range(num_classes)]
+    # get predicted class probabilities for all clusters
+    preds = [ np.max(model.predict_proba(clusters[i]), axis=1 ) for i in range(num_classes) ]
+    # sort and get indices
+    pred_sorted = [ np.argsort(preds[i]) for i in range(num_classes)]
+    # Re-shuffle original indices
+    indices_sorted = [indices[i][pred_sorted[i]] for i in range(num_classes)]
+    ranking = np.zeros(threshold)
+    
+    i = 0
+    rank_index = 0
+    # set_trace()
+    while rank_index < threshold:
+        # Take the least certain sample indices from each cluster one by one
+        for j in range(num_classes):
+            if rank_index == threshold:
+                break
+            elif len(indices_sorted[j]) > i:
+                ranking[rank_index] = indices_sorted[j][i]
+                rank_index += 1
+        i += 1
+    # set_trace()
+    return ranking.astype(np.int32)
+
+
