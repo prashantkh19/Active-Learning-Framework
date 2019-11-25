@@ -1,6 +1,20 @@
 import numpy as np
 import warnings
-from scipy.stats import entropy
+import pdb
+
+def entropy(pk, qk=None):
+    pk = 1.0 * pk / np.sum(pk, axis=0) # Normalizing qk
+    pk[pk == 0] = 1.0
+    if qk is not None:
+        qk = 1.0 * qk / np.sum(qk, axis=0) # Normalizing qk
+        qk[qk == 0] = 1
+        S = pk * np.log(pk / qk)
+        # S = S[np.isnan(S) != True].sum(axis = 0)
+        return S.sum(axis=0)
+    else:
+        S = pk * np.log(pk)
+        # S = S[np.isnan(S) != True].sum(axis = 0)
+        return -S.sum(axis=0)
 
 def uncertainty_sampling(X, model, measure, threshold=5, lc_thresh=0.6, m_thresh=0.2, h_thresh=0.8):
     if len(X.shape) == 1:
@@ -64,7 +78,7 @@ def query_by_committee(X, committee, measure, kl_thresh=0.4):
             votes[:, pred] += 1 # Counting number of votes for each class
         votes = votes / C # This gets the fractional distribution of each vote
         vote_entropy = entropy(votes.T)
-
+        # pdb.set_trace()
         if vote_entropy.shape[0] == 1: # For stream based learning
             return vote_entropy[0] > 0.60 # Value found while experimenting
 
